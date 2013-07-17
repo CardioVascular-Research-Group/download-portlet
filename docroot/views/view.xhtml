@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+
+<f:view
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+	<h:head />
+	<h:body>
+
+	<h:panelGroup layout="block" id="downloadTopContentLineShade" styleClass="topLineShade">
+		<h:outputText styleClass="TitleLine" value="ICM Electrocardiograph Tool Kit: Download"/>
+	</h:panelGroup>
+
+	<h:panelGroup layout="block" styleClass="backgroundofContent">
+
+		<p:layout id="layoutDownloadInclude" styleClass="layout-download">
+			<p:layoutUnit position="center"	styleClass="layout-unit-download">
+
+				<h:form id="formDownload">
+					<p:dataTable id="rawFiles" 
+						var="studyHolder" 
+						styleClass="download-table"
+						sortMode="multiple" 
+						rowKey="#{studyHolder.subjectID}"
+						value="#{downloadBacking.rawFileList}"
+						selection="#{downloadBacking.selectedRawFiles}"
+						selectionMode="multiple" 
+						paginator="true" 
+						rows="10"
+						paginatorPosition="bottom">
+
+						<f:facet name="header">Select ECG Records for Download</f:facet>
+
+						<p:column headerText="Subject ID">
+							<h:outputText value="#{studyHolder.subjectID}"/>
+						</p:column>
+
+						<p:column headerText="File Format">
+							<h:outputText value="#{studyHolder.datatype}"/>
+						</p:column>
+
+						<p:column headerText="File Date">
+							<h:outputText value="#{studyHolder.dateOfRecording}"/>
+						</p:column>
+
+						<p:column headerText="Record Name">
+							<h:outputText value="#{studyHolder.recordName}"/>
+						</p:column>
+
+						<f:facet name="footer">
+							<p:commandButton id="downloadRaw" 
+								ajax="false"
+								value="Download Files"
+								action="#{downloadBacking.downloadRawFiles}"/>
+						</f:facet>
+
+					</p:dataTable>
+
+					<p:separator style="margin-bottom:20px"/>
+					<f:verbatim><br/><br/></f:verbatim>
+
+					<p:dataTable id="analysisResults" 
+						var="analysisResult"
+						styleClass="download-table" 
+						sortMode="multiple"
+						rowKey="#{analysisResult.recordName}"
+						value="#{downloadBacking.analysisResultList}"
+						selection="#{downloadBacking.selectedResultFiles}"
+						selectionMode="multiple" 
+						paginator="true" 
+						rows="10"
+						paginatorPosition="bottom">
+
+						<f:facet name="header">Select Analysis Results Files for Download</f:facet>
+
+						<p:column headerText="Subject ID">
+							<h:outputText value="#{analysisResult.subjectID}"/>
+						</p:column>
+
+						<p:column headerText="File Date">
+							<h:outputText value="#{analysisResult.dateOfAnalysis}"/>
+						</p:column>
+
+						<p:column headerText="Record Name">
+							<h:outputText value="#{analysisResult.recordName}"/>
+						</p:column>
+
+						<p:column headerText="Analysis">
+							<h:outputText value="#{analysisResult.algorithmUsed}"/>
+						</p:column>
+
+						<f:facet name="footer">
+							<p:commandButton id="downloadResults" 
+								ajax="false"
+								value="Download Files"
+								action="#{downloadBacking.downloadAnalysisResultFiles}"/>
+						</f:facet>
+
+					</p:dataTable>
+				</h:form>
+
+				<p:separator style="margin-bottom:20px"/>
+
+			</p:layoutUnit>
+		</p:layout>
+
+	</h:panelGroup>
+
+	</h:body>
+</f:view>
