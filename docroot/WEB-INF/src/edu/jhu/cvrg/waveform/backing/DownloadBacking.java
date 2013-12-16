@@ -2,6 +2,7 @@ package edu.jhu.cvrg.waveform.backing;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
@@ -9,13 +10,20 @@ import javax.faces.bean.ViewScoped;
 
 import org.apache.log4j.Logger;
 
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portlet.documentlibrary.service.DLAppLocalServiceUtil;
+
+import edu.jhu.cvrg.dbapi.dto.AnalysisJobDTO;
+import edu.jhu.cvrg.dbapi.dto.DocumentRecordDTO;
+import edu.jhu.cvrg.dbapi.dto.FileInfoDTO;
+import edu.jhu.cvrg.dbapi.factory.Connection;
+import edu.jhu.cvrg.dbapi.factory.ConnectionFactory;
 import edu.jhu.cvrg.waveform.main.DownloadManager;
-import edu.jhu.cvrg.waveform.model.AnalysisResult;
-import edu.jhu.cvrg.waveform.model.ResultsDetailList;
-import edu.jhu.cvrg.waveform.model.StudyEntry;
+import edu.jhu.cvrg.waveform.model.AnalysisFileVO;
+import edu.jhu.cvrg.waveform.model.UploadFileVO;
 import edu.jhu.cvrg.waveform.utility.ResourceUtility;
-import edu.jhu.cvrg.waveform.utility.ResultsStorageDBUtility;
-import edu.jhu.cvrg.waveform.utility.StudyEntryUtility;
 
 @ManagedBean(name = "downloadBacking")
 @ViewScoped
@@ -24,51 +32,57 @@ public class DownloadBacking implements Serializable {
 	private static final long serialVersionUID = 4778576272893200307L;
 	static org.apache.log4j.Logger logger = Logger.getLogger(DownloadBacking.class);
 
-	private ArrayList<AnalysisResult> analysisResultList;
-	private AnalysisResult[] selectedResultFiles;
-	private ResultsDetailList resultFilteringList;
-	private ArrayList<StudyEntry> rawFileList;
-	private StudyEntry[] selectedRawFiles;
+	private ArrayList<AnalysisFileVO> analysisResultList;
+	private AnalysisFileVO[] selectedResultFiles;
+	private ArrayList<UploadFileVO> rawFileList;
+	private UploadFileVO[] selectedRawFiles;
 	private DownloadManager downloadManager;
 	private String fileLink;
-	private String userID;
-	private String MISSING_VALUE = "0";
-	private StudyEntryUtility theDB;
+	private Long userID;
 	
 	@PostConstruct
 	public void init(){
 		
 		try{
-			userID = ResourceUtility.getCurrentUser().getScreenName();
+			userID = ResourceUtility.getCurrentUserId();
 		} catch (NullPointerException e) {
 			logger.error("User not logged in.");
 			return;
 		}
 			
-		String dbUser = ResourceUtility.getDbUser();
-		String dbPassword = ResourceUtility.getDbPassword();
-		String dbUri = ResourceUtility.getDbURI();
-		String dbDriver = ResourceUtility.getDbDriver();
-		String dbMainDatabase = ResourceUtility.getDbMainDatabase();
+		Connection theDB = ConnectionFactory.createConnection();
 		
-		if(dbUser.equals(MISSING_VALUE) || 
-				dbPassword.equals(MISSING_VALUE) || 
-				dbUri.equals(MISSING_VALUE) || 
-				dbDriver.equals(MISSING_VALUE) ||
-				dbMainDatabase.equals(MISSING_VALUE)){
+		List<FileInfoDTO> dbFileList = theDB.getFileIdListByUser(userID);
+		
+		DocumentRecordDTO documentRecord = null;
+		analysisResultList = new ArrayList<AnalysisFileVO>();
+		rawFileList = new ArrayList<UploadFileVO>();
+		
+		for (FileInfoDTO fileInfoDTO : dbFileList) {
 			
-			logger.error("Missing one or more configuration values for the database.");
-			return;	
+			try {
+				
+				FileEntry liferayFile = DLAppLocalServiceUtil.getFileEntry(fileInfoDTO.getFileEntryId());
+				
+				if(documentRecord == null || !documentRecord.getDocumentRecordId().equals(fileInfoDTO.getDocumentRecordId())){
+					documentRecord = theDB.getDocumentRecordById(fileInfoDTO.getDocumentRecordId());
+				}
+				
+				if(fileInfoDTO.getAnalysisJobId() != null){
+					AnalysisJobDTO analysisJob = theDB.getAnalysisJobById(fileInfoDTO.getAnalysisJobId());
+					analysisResultList.add(new AnalysisFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), analysisJob.getDateOfAnalysis(), liferayFile.getTitle(), analysisJob.getServiceMethod(), liferayFile));
+				}else{
+					rawFileList.add(new UploadFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), documentRecord.getOriginalFormat(), documentRecord.getDateOfRecording(), liferayFile.getTitle(), liferayFile));
+				}
+				
+			} catch (PortalException e) {
+				e.printStackTrace();
+			} catch (SystemException e) {
+				e.printStackTrace();
+			}
+			
+			
 		}
-		theDB = new StudyEntryUtility(dbUser, dbPassword, dbUri, dbDriver, dbMainDatabase);
-		
-		rawFileList = theDB.getEntries(userID);
-		
-		ResultsStorageDBUtility resultsDB = new ResultsStorageDBUtility(dbUser, dbPassword, dbUri,	dbDriver, dbMainDatabase);
-		
-		analysisResultList = resultsDB.getAnalysisResults(userID);
-		resultFilteringList = new ResultsDetailList();
-		resultFilteringList.setNewFileList(analysisResultList);
 		
 		downloadManager = new DownloadManager();
 	}
@@ -88,40 +102,20 @@ public class DownloadBacking implements Serializable {
 		return "success";
 	}
 
-	public ArrayList<AnalysisResult> getAnalysisResultList() {
-		return analysisResultList;
-	}
-
-	public void setAnalysisResultList(ArrayList<AnalysisResult> analysisResultList) {
-		this.analysisResultList = analysisResultList;
-	}
-
-	public AnalysisResult[] getSelectedResultFiles() {
+	public AnalysisFileVO[] getSelectedResultFiles() {
 		return selectedResultFiles;
 	}
 
-	public void setSelectedResultFiles(AnalysisResult[] selectedResultFiles) {
+	public void setSelectedResultFiles(AnalysisFileVO[] selectedResultFiles) {
 		this.selectedResultFiles = selectedResultFiles;
 	}
 
-	public StudyEntry[] getSelectedRawFiles() {
+	public UploadFileVO[] getSelectedRawFiles() {
 		return selectedRawFiles;
 	}
 
-	public void setSelectedRawFiles(StudyEntry[] selectedRawFiles) {
+	public void setSelectedRawFiles(UploadFileVO[] selectedRawFiles) {
 		this.selectedRawFiles = selectedRawFiles;
-	}
-
-	public ArrayList<StudyEntry> getRawFileList() {
-		return rawFileList;
-	}
-
-	public String getUserID() {
-		return userID;
-	}
-
-	public void setUserID(String userID) {
-		this.userID = userID;
 	}
 
 	public String getFileLink() {
@@ -130,5 +124,21 @@ public class DownloadBacking implements Serializable {
 
 	public void setFileLink(String fileLink) {
 		this.fileLink = fileLink;
+	}
+
+	public ArrayList<AnalysisFileVO> getAnalysisResultList() {
+		return analysisResultList;
+	}
+
+	public void setAnalysisResultList(ArrayList<AnalysisFileVO> analysisResultList) {
+		this.analysisResultList = analysisResultList;
+	}
+
+	public ArrayList<UploadFileVO> getRawFileList() {
+		return rawFileList;
+	}
+
+	public void setRawFileList(ArrayList<UploadFileVO> rawFileList) {
+		this.rawFileList = rawFileList;
 	}
 }

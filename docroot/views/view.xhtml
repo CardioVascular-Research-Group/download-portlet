@@ -10,32 +10,24 @@
 	<h:head />
 	<h:body>
 
-	<h:panelGroup layout="block" id="downloadTopContentLineShade" styleClass="topLineShade">
-		<h:outputText styleClass="TitleLine" value="ICM Electrocardiograph Tool Kit: Download"/>
-	</h:panelGroup>
-
 	<h:panelGroup layout="block" styleClass="backgroundofContent">
-
-		<p:layout id="layoutDownloadInclude" styleClass="layout-download">
-			<p:layoutUnit position="center"	styleClass="layout-unit-download">
-
-				<h:form id="formDownload">
+		<h:form id="formDownload">
+			<p:layout id="layoutDownloadInclude" style="width:100%;height:550px">
+				<p:layoutUnit position="center" header="Select ECG Records for Download">
 					<p:dataTable id="rawFiles" 
 						var="studyHolder" 
 						styleClass="download-table"
 						sortMode="multiple" 
-						rowKey="#{studyHolder.subjectID}"
+						rowKey="#{studyHolder.liferayFile.fileEntryId}"
 						value="#{downloadBacking.rawFileList}"
 						selection="#{downloadBacking.selectedRawFiles}"
 						selectionMode="multiple" 
 						paginator="true" 
-						rows="10"
+						rows="5"
 						paginatorPosition="bottom">
 
-						<f:facet name="header">Select ECG Records for Download</f:facet>
-
 						<p:column headerText="Subject ID">
-							<h:outputText value="#{studyHolder.subjectID}"/>
+							<h:outputText value="#{studyHolder.subjectId}"/>
 						</p:column>
 
 						<p:column headerText="File Format">
@@ -58,26 +50,22 @@
 						</f:facet>
 
 					</p:dataTable>
-
-					<p:separator style="margin-bottom:20px"/>
-					<f:verbatim><br/><br/></f:verbatim>
-
+				</p:layoutUnit>
+				<p:layoutUnit position="north" header="Select Analysis Results Files for Download" size="275">
 					<p:dataTable id="analysisResults" 
 						var="analysisResult"
 						styleClass="download-table" 
 						sortMode="multiple"
-						rowKey="#{analysisResult.recordName}"
+						rowKey="#{analysisResult.liferayFile.fileEntryId}"
 						value="#{downloadBacking.analysisResultList}"
 						selection="#{downloadBacking.selectedResultFiles}"
 						selectionMode="multiple" 
 						paginator="true" 
-						rows="10"
+						rows="5"
 						paginatorPosition="bottom">
 
-						<f:facet name="header">Select Analysis Results Files for Download</f:facet>
-
 						<p:column headerText="Subject ID">
-							<h:outputText value="#{analysisResult.subjectID}"/>
+							<h:outputText value="#{analysisResult.subjectId}"/>
 						</p:column>
 
 						<p:column headerText="File Date">
@@ -100,13 +88,9 @@
 						</f:facet>
 
 					</p:dataTable>
-				</h:form>
-
-				<p:separator style="margin-bottom:20px"/>
-
-			</p:layoutUnit>
-		</p:layout>
-
+				</p:layoutUnit>
+			</p:layout>
+		</h:form>
 	</h:panelGroup>
 
 	</h:body>
