@@ -52,7 +52,7 @@ public class DownloadBacking implements Serializable {
 			
 		Connection theDB = ConnectionFactory.createConnection();
 		
-		List<FileInfoDTO> dbFileList = theDB.getFileIdListByUser(userID);
+		List<FileInfoDTO> dbFileList = theDB.getFileListByUser(userID);
 		
 		DocumentRecordDTO documentRecord = null;
 		analysisResultList = new ArrayList<AnalysisFileVO>();
