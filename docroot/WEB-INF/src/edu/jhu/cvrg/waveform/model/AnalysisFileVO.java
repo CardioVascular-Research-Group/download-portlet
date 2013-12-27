@@ -10,12 +10,14 @@ public class AnalysisFileVO extends DownloadFileVO{
 	
 	private Date dateOfAnalysis;
 	private String algorithmUsed;
+	private Long analysisJobId;
 	
 	public AnalysisFileVO(String subjectId, Date dateOfAnalysis,
-			String recordName, String algorithmUsed, FileEntry liferayFile) {
+			String recordName, String algorithmUsed, FileEntry liferayFile, Long analysisJobId) {
 		super(subjectId, recordName, liferayFile);
 		this.dateOfAnalysis = dateOfAnalysis;
 		this.algorithmUsed = algorithmUsed;
+		this.analysisJobId = analysisJobId;
 	}
 
 	public Date getDateOfAnalysis() {
@@ -25,5 +27,16 @@ public class AnalysisFileVO extends DownloadFileVO{
 	public String getAlgorithmUsed() {
 		return algorithmUsed;
 	}
-
+	
+	public String getUserRecordName(){
+		String replacement = '.'+this.getLiferayFile().getExtension();
+		String target = ("_"+analysisJobId+replacement);
+				
+		return this.getRecordName().replace(target, replacement);
+	}
+	
+	public Long getAnalysisJobId() {
+		return analysisJobId;
+	}
+	
 }

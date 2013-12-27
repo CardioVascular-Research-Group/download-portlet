@@ -70,7 +70,9 @@ public class DownloadBacking implements Serializable {
 				
 				if(fileInfoDTO.getAnalysisJobId() != null){
 					AnalysisJobDTO analysisJob = theDB.getAnalysisJobById(fileInfoDTO.getAnalysisJobId());
-					analysisResultList.add(new AnalysisFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), analysisJob.getDateOfAnalysis(), liferayFile.getTitle(), analysisJob.getServiceMethod(), liferayFile));
+					analysisResultList.add(new AnalysisFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), 
+										   					  analysisJob.getDateOfAnalysis(), liferayFile.getTitle(), analysisJob.getServiceMethod(), 
+										   					  liferayFile, analysisJob.getAnalysisJobId()));
 				}else{
 					rawFileList.add(new UploadFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), documentRecord.getOriginalFormat(), documentRecord.getDateOfRecording(), liferayFile.getTitle(), liferayFile));
 				}

@@ -112,7 +112,7 @@ public class DownloadManager implements Serializable{
 			
 				ZipOutputStream zipOut = createZipFolder("raw");
 				for(DownloadFileVO file : selectedRawFiles){
-					addFileToZip(file.getLiferayFile(), zipOut);
+					addFileToZip(file, zipOut);
 				}
 				if(zipOut != null){
 					zipOut.close();
@@ -121,8 +121,15 @@ public class DownloadManager implements Serializable{
 				downloadSelectedFile(zipFileName, "zip");
 				deleteFile(userFolderPath, AnalysisUtility.extractName(zipFileName));
 			}else{
+				String fileName = selectedRawFiles[0].getLiferayFile().getTitle();
+				if(selectedRawFiles[0] instanceof AnalysisFileVO){
+					AnalysisFileVO aFile = (AnalysisFileVO)selectedRawFiles[0];
+					fileName = aFile.getUserRecordName();
+				}
+				
 				FileEntry file = selectedRawFiles[0].getLiferayFile();
-				downloadSelectedFile(file.getContentStream(), file.getTitle(), String.valueOf(file.getSize()), file.getExtension());
+				
+				downloadSelectedFile(file.getContentStream(), fileName, String.valueOf(file.getSize()), file.getExtension());
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -165,12 +172,21 @@ public class DownloadManager implements Serializable{
 	 * @param zipOut
 	 * @throws IOException
 	 */
-	private void addFileToZip(FileEntry liferayFile, ZipOutputStream zipOut) throws IOException{
+	private void addFileToZip(DownloadFileVO file, ZipOutputStream zipOut) throws IOException{
 		
 		InputStream inStream = null;
 		try {
-			inStream = liferayFile.getContentStream();
-			ZipEntry zipEntry = new ZipEntry(liferayFile.getTitle());
+			inStream = file.getLiferayFile().getContentStream();
+			String entryName = null;
+			if(file instanceof AnalysisFileVO){
+				AnalysisFileVO aFile = (AnalysisFileVO) file;
+				entryName = aFile.getAnalysisJobId()+"/"+aFile.getUserRecordName();
+			}else{
+				entryName = file.getLiferayFile().getTitle();
+			}
+			
+			ZipEntry zipEntry = new ZipEntry(entryName);
+			
 			zipOut.putNextEntry(zipEntry);
 
 			byte[] bytes = new byte[1024];
