@@ -12,84 +12,93 @@
 
 	<h:panelGroup layout="block" styleClass="backgroundofContent">
 		<h:form id="formDownload">
-			<p:layout id="layoutDownloadInclude" style="width:100%;height:550px">
-				<p:layoutUnit position="center" header="Select ECG Records for Download">
-					<p:dataTable id="rawFiles" 
-						var="studyHolder" 
-						styleClass="download-table"
-						sortMode="multiple" 
-						rowKey="#{studyHolder.liferayFile.fileEntryId}"
-						value="#{downloadBacking.rawFileList}"
-						selection="#{downloadBacking.selectedRawFiles}"
-						selectionMode="multiple" 
-						paginator="true" 
-						rows="5"
-						paginatorPosition="bottom">
-
-						<p:column headerText="Subject ID">
-							<h:outputText value="#{studyHolder.subjectId}"/>
-						</p:column>
-
-						<p:column headerText="File Format">
-							<h:outputText value="#{studyHolder.datatype}"/>
-						</p:column>
-
-						<p:column headerText="File Date">
-							<h:outputText value="#{studyHolder.dateOfRecording}"/>
-						</p:column>
-
-						<p:column headerText="Record Name">
-							<h:outputText value="#{studyHolder.recordName}"/>
-						</p:column>
-
-						<f:facet name="footer">
-							<p:commandButton id="downloadRaw" 
-								ajax="false"
-								value="Download Files"
-								action="#{downloadBacking.downloadRawFiles}"/>
-						</f:facet>
-
-					</p:dataTable>
-				</p:layoutUnit>
-				<p:layoutUnit position="north" header="Select Analysis Results Files for Download" size="275">
-					<p:dataTable id="analysisResults" 
-						var="analysisResult"
-						styleClass="download-table" 
-						sortMode="multiple"
-						rowKey="#{analysisResult.liferayFile.fileEntryId}"
-						value="#{downloadBacking.analysisResultList}"
-						selection="#{downloadBacking.selectedResultFiles}"
-						selectionMode="multiple" 
-						paginator="true" 
-						rows="5"
-						paginatorPosition="bottom">
-
-						<p:column headerText="Subject ID">
-							<h:outputText value="#{analysisResult.subjectId}"/>
-						</p:column>
-
-						<p:column headerText="File Date">
-							<h:outputText value="#{analysisResult.dateOfAnalysis}"/>
-						</p:column>
-
-						<p:column headerText="Record Name">
-							<h:outputText value="#{analysisResult.userRecordName}"/>
-						</p:column>
-
-						<p:column headerText="Analysis">
-							<h:outputText value="#{analysisResult.algorithmUsed}"/>
-						</p:column>
-
-						<f:facet name="footer">
-							<p:commandButton id="downloadResults" 
-								ajax="false"
-								value="Download Files"
-								action="#{downloadBacking.downloadAnalysisResultFiles}"/>
-						</f:facet>
-
-					</p:dataTable>
-				</p:layoutUnit>
-			</p:layout>
+		
+			<h:panelGroup rendered="#{downloadBacking.user != null}">
+				<p:layout id="layoutDownloadInclude" style="width:100%;height:550px">
+					<p:layoutUnit position="center" header="Select ECG Records for Download">
+						<p:dataTable id="rawFiles" 
+							var="studyHolder" 
+							styleClass="download-table"
+							sortMode="multiple" 
+							rowKey="#{studyHolder.liferayFile.fileEntryId}"
+							value="#{downloadBacking.rawFileList}"
+							selection="#{downloadBacking.selectedRawFiles}"
+							selectionMode="multiple" 
+							paginator="true" 
+							rows="5"
+							paginatorPosition="bottom">
+	
+							<p:column headerText="Subject ID">
+								<h:outputText value="#{studyHolder.subjectId}"/>
+							</p:column>
+	
+							<p:column headerText="File Format">
+								<h:outputText value="#{studyHolder.datatype}"/>
+							</p:column>
+	
+							<p:column headerText="File Date">
+								<h:outputText value="#{studyHolder.dateOfRecording}"/>
+							</p:column>
+	
+							<p:column headerText="Record Name">
+								<h:outputText value="#{studyHolder.recordName}"/>
+							</p:column>
+	
+							<f:facet name="footer">
+								<p:commandButton id="downloadRaw" 
+									ajax="false"
+									value="Download Files"
+									action="#{downloadBacking.downloadRawFiles}"/>
+							</f:facet>
+	
+						</p:dataTable>
+					</p:layoutUnit>
+					<p:layoutUnit position="north" header="Select Analysis Results Files for Download" size="275">
+						<p:dataTable id="analysisResults" 
+							var="analysisResult"
+							styleClass="download-table" 
+							sortMode="multiple"
+							rowKey="#{analysisResult.liferayFile.fileEntryId}"
+							value="#{downloadBacking.analysisResultList}"
+							selection="#{downloadBacking.selectedResultFiles}"
+							selectionMode="multiple" 
+							paginator="true" 
+							rows="5"
+							paginatorPosition="bottom">
+	
+							<p:column headerText="Subject ID">
+								<h:outputText value="#{analysisResult.subjectId}"/>
+							</p:column>
+	
+							<p:column headerText="File Date">
+								<h:outputText value="#{analysisResult.dateOfAnalysis}"/>
+							</p:column>
+	
+							<p:column headerText="Record Name">
+								<h:outputText value="#{analysisResult.userRecordName}"/>
+							</p:column>
+	
+							<p:column headerText="Analysis">
+								<h:outputText value="#{analysisResult.algorithmUsed}"/>
+							</p:column>
+	
+							<f:facet name="footer">
+								<p:commandButton id="downloadResults" 
+									ajax="false"
+									value="Download Files"
+									action="#{downloadBacking.downloadAnalysisResultFiles}"/>
+							</f:facet>
+	
+						</p:dataTable>
+					</p:layoutUnit>
+				</p:layout>
+			</h:panelGroup>
+			
+			<h:panelGroup rendered="#{downloadBacking.user == null}">
+				<div class="signin">
+					Please <a href="/c/portal/login" rel="nofollow">Sign In</a>
+				</div>
+			</h:panelGroup>
 		</h:form>
 	</h:panelGroup>
 

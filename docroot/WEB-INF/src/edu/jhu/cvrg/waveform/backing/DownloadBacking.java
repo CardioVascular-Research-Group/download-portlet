@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.model.User;
 import com.liferay.portlet.documentlibrary.service.DLAppLocalServiceUtil;
 
 import edu.jhu.cvrg.dbapi.dto.AnalysisJobDTO;
@@ -38,55 +39,56 @@ public class DownloadBacking implements Serializable {
 	private UploadFileVO[] selectedRawFiles;
 	private DownloadManager downloadManager;
 	private String fileLink;
-	private Long userID;
+	private User userModel;
 	
 	@PostConstruct
 	public void init(){
 		
 		try{
-			userID = ResourceUtility.getCurrentUserId();
+			userModel = ResourceUtility.getCurrentUser();
 		} catch (NullPointerException e) {
-			logger.error("User not logged in.");
-			return;
+			logger.info("User not logged in.");
 		}
+		
+		if(userModel != null){
+			Connection theDB = ConnectionFactory.createConnection();
 			
-		Connection theDB = ConnectionFactory.createConnection();
-		
-		List<FileInfoDTO> dbFileList = theDB.getFileListByUser(userID);
-		
-		DocumentRecordDTO documentRecord = null;
-		analysisResultList = new ArrayList<AnalysisFileVO>();
-		rawFileList = new ArrayList<UploadFileVO>();
-		
-		for (FileInfoDTO fileInfoDTO : dbFileList) {
+			List<FileInfoDTO> dbFileList = theDB.getFileListByUser(userModel.getUserId());
 			
-			try {
+			DocumentRecordDTO documentRecord = null;
+			analysisResultList = new ArrayList<AnalysisFileVO>();
+			rawFileList = new ArrayList<UploadFileVO>();
+			
+			for (FileInfoDTO fileInfoDTO : dbFileList) {
 				
-				FileEntry liferayFile = DLAppLocalServiceUtil.getFileEntry(fileInfoDTO.getFileEntryId());
-				
-				if(documentRecord == null || !documentRecord.getDocumentRecordId().equals(fileInfoDTO.getDocumentRecordId())){
-					documentRecord = theDB.getDocumentRecordById(fileInfoDTO.getDocumentRecordId());
+				try {
+					
+					FileEntry liferayFile = DLAppLocalServiceUtil.getFileEntry(fileInfoDTO.getFileEntryId());
+					
+					if(documentRecord == null || !documentRecord.getDocumentRecordId().equals(fileInfoDTO.getDocumentRecordId())){
+						documentRecord = theDB.getDocumentRecordById(fileInfoDTO.getDocumentRecordId());
+					}
+					
+					if(fileInfoDTO.getAnalysisJobId() != null){
+						AnalysisJobDTO analysisJob = theDB.getAnalysisJobById(fileInfoDTO.getAnalysisJobId());
+						analysisResultList.add(new AnalysisFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), 
+											   					  analysisJob.getDateOfAnalysis(), liferayFile.getTitle(), analysisJob.getServiceMethod(), 
+											   					  liferayFile, analysisJob.getAnalysisJobId()));
+					}else{
+						rawFileList.add(new UploadFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), documentRecord.getOriginalFormat(), documentRecord.getDateOfRecording(), liferayFile.getTitle(), liferayFile));
+					}
+					
+				} catch (PortalException e) {
+					e.printStackTrace();
+				} catch (SystemException e) {
+					e.printStackTrace();
 				}
 				
-				if(fileInfoDTO.getAnalysisJobId() != null){
-					AnalysisJobDTO analysisJob = theDB.getAnalysisJobById(fileInfoDTO.getAnalysisJobId());
-					analysisResultList.add(new AnalysisFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), 
-										   					  analysisJob.getDateOfAnalysis(), liferayFile.getTitle(), analysisJob.getServiceMethod(), 
-										   					  liferayFile, analysisJob.getAnalysisJobId()));
-				}else{
-					rawFileList.add(new UploadFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), documentRecord.getOriginalFormat(), documentRecord.getDateOfRecording(), liferayFile.getTitle(), liferayFile));
-				}
 				
-			} catch (PortalException e) {
-				e.printStackTrace();
-			} catch (SystemException e) {
-				e.printStackTrace();
 			}
 			
-			
+			downloadManager = new DownloadManager();
 		}
-		
-		downloadManager = new DownloadManager();
 	}
 	
 	public String downloadRawFiles(){
@@ -143,4 +145,9 @@ public class DownloadBacking implements Serializable {
 	public void setRawFileList(ArrayList<UploadFileVO> rawFileList) {
 		this.rawFileList = rawFileList;
 	}
+	
+	public User getUser(){
+		return userModel;
+	}
+
 }
