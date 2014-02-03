@@ -8,8 +8,6 @@ import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 
-import org.apache.log4j.Logger;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -28,10 +26,10 @@ import edu.jhu.cvrg.waveform.utility.ResourceUtility;
 
 @ManagedBean(name = "downloadBacking")
 @ViewScoped
-public class DownloadBacking implements Serializable {
+public class DownloadBacking extends BackingBean implements Serializable {
 
 	private static final long serialVersionUID = 4778576272893200307L;
-	static org.apache.log4j.Logger logger = Logger.getLogger(DownloadBacking.class);
+	
 
 	private ArrayList<AnalysisFileVO> analysisResultList;
 	private AnalysisFileVO[] selectedResultFiles;
@@ -47,7 +45,7 @@ public class DownloadBacking implements Serializable {
 		try{
 			userModel = ResourceUtility.getCurrentUser();
 		} catch (NullPointerException e) {
-			logger.info("User not logged in.");
+			this.getLog().info("User not logged in.");
 		}
 		
 		if(userModel != null){
