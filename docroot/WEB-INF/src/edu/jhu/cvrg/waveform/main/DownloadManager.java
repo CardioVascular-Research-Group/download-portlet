@@ -129,7 +129,7 @@ public class DownloadManager implements Serializable{
 				
 				FileEntry file = selectedRawFiles[0].getLiferayFile();
 				
-				downloadSelectedFile(file.getContentStream(), fileName, String.valueOf(file.getSize()), file.getExtension());
+				downloadSelectedFile(file.getContentStream(), fileName, file.getSize(), file.getExtension());
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -221,7 +221,7 @@ public class DownloadManager implements Serializable{
 		
 		File file = new File(userFolder, filename);
 		try {
-			downloadSelectedFile(new FileInputStream(file), filename, String.valueOf(file.length()), filetype);
+			downloadSelectedFile(new FileInputStream(file), filename, file.length(), filetype);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -234,7 +234,7 @@ public class DownloadManager implements Serializable{
 	 * @param filename
 	 * @param filetype
 	 */
-	private void downloadSelectedFile(InputStream inStream, String fileName, String fileLength, String filetype){
+	private void downloadSelectedFile(InputStream inStream, String fileName, long fileLength, String filetype){
 		
 		String contentType = "application/zip";
 	
@@ -245,6 +245,9 @@ public class DownloadManager implements Serializable{
 		if(filetype.equals("xls")){
 			contentType = "application/vnd.ms-excel";
 		}
+		
+		//Indeterminated 9 bytes on the request
+		fileLength+=9;
 		
 		FacesContext facesContext = (FacesContext) FacesContext.getCurrentInstance();
 	    ExternalContext externalContext = facesContext.getExternalContext();
@@ -259,7 +262,7 @@ public class DownloadManager implements Serializable{
 	
 	        response.reset();
 	        response.setHeader("Content-Type", contentType);
-	        response.setHeader("Content-Length", fileLength);
+	        response.setHeader("Content-Length", String.valueOf(fileLength));
 	        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 	        response.flushBuffer();
 	        output = new BufferedOutputStream(response.getOutputStream(), 10240);
