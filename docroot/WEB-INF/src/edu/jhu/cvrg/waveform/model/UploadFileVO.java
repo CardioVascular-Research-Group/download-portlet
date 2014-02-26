@@ -4,14 +4,16 @@ import java.util.Date;
 
 import com.liferay.portal.kernel.repository.model.FileEntry;
 
+import edu.jhu.cvrg.dbapi.enums.EnumFileType;
+
 public class UploadFileVO extends DownloadFileVO{
 
 	private static final long serialVersionUID = 1023910725115455855L;
 	
-	private String datatype;
+	private EnumFileType datatype;
 	private Date dateOfRecording;
 	
-	public UploadFileVO(String subjectId, String datatype,
+	public UploadFileVO(String subjectId, EnumFileType datatype,
 			Date dateOfRecording, String recordName, FileEntry liferayFile) {
 		super(subjectId, recordName, liferayFile);
 		this.datatype = datatype;
@@ -19,7 +21,7 @@ public class UploadFileVO extends DownloadFileVO{
 		
 	}
 
-	public String getDatatype() {
+	public EnumFileType getDatatype() {
 		return datatype;
 	}
 
