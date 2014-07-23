@@ -246,6 +246,10 @@ public class DownloadManager implements Serializable{
 			contentType = "application/vnd.ms-excel";
 		}
 		
+		if(filetype.equals("txt")){
+			contentType = "text/plain";
+		}
+		
 		//Indeterminated 9 bytes on the request
 		fileLength+=9;
 		
