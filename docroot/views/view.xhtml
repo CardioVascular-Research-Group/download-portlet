@@ -15,44 +15,6 @@
 		
 			<h:panelGroup rendered="#{downloadBacking.user != null}">
 				<p:layout id="layoutDownloadInclude" style="width:100%;height:550px">
-					<p:layoutUnit position="center" header="Select ECG Records for Download">
-						<p:dataTable id="rawFiles" 
-							var="studyHolder" 
-							styleClass="download-table"
-							sortMode="multiple" 
-							rowKey="#{studyHolder.liferayFile.fileEntryId}"
-							value="#{downloadBacking.rawFileList}"
-							selection="#{downloadBacking.selectedRawFiles}"
-							selectionMode="multiple" 
-							paginator="true" 
-							rows="5"
-							paginatorPosition="bottom">
-	
-							<p:column headerText="Subject ID">
-								<h:outputText value="#{studyHolder.subjectId}"/>
-							</p:column>
-	
-							<p:column headerText="Original File Format">
-								<h:outputText value="#{studyHolder.datatype.label}"/>
-							</p:column>
-	
-							<p:column headerText="File Date">
-								<h:outputText value="#{studyHolder.dateOfRecording}"/>
-							</p:column>
-	
-							<p:column headerText="Record Name">
-								<h:outputText value="#{studyHolder.recordName}"/>
-							</p:column>
-	
-							<f:facet name="footer">
-								<p:commandButton id="downloadRaw" 
-									ajax="false"
-									value="Download Files"
-									action="#{downloadBacking.downloadRawFiles}"/>
-							</f:facet>
-	
-						</p:dataTable>
-					</p:layoutUnit>
 					<p:layoutUnit position="north" header="Select Analysis Results Files for Download" size="275">
 						<p:dataTable id="analysisResults" 
 							var="analysisResult"
@@ -64,6 +26,7 @@
 							selectionMode="multiple" 
 							paginator="true" 
 							rows="5"
+							rowsPerPageTemplate="5,10,20,100,500"
 							paginatorPosition="bottom">
 	
 							<p:column headerText="Subject ID">
@@ -87,6 +50,46 @@
 									ajax="false"
 									value="Download Files"
 									action="#{downloadBacking.downloadAnalysisResultFiles}"/>
+							</f:facet>
+	
+						</p:dataTable>
+					</p:layoutUnit>
+
+					<p:layoutUnit position="center" header="Select ECG Records for Download">
+						<p:dataTable id="rawFiles" 
+							var="studyHolder" 
+							styleClass="download-table"
+							sortMode="multiple" 
+							rowKey="#{studyHolder.liferayFile.fileEntryId}"
+							value="#{downloadBacking.rawFileList}"
+							selection="#{downloadBacking.selectedRawFiles}"
+							selectionMode="multiple" 
+							paginator="true" 
+							rows="5"
+							rowsPerPageTemplate="5,10,20,100"
+							paginatorPosition="bottom">
+	
+							<p:column headerText="Subject ID">
+								<h:outputText value="#{studyHolder.subjectId}"/>
+							</p:column>
+	
+							<p:column headerText="Original File Format">
+								<h:outputText value="#{studyHolder.datatype.label}"/>
+							</p:column>
+	
+							<p:column headerText="File Date">
+								<h:outputText value="#{studyHolder.dateOfRecording}"/>
+							</p:column>
+	
+							<p:column headerText="Record Name">
+								<h:outputText value="#{studyHolder.recordName}"/>
+							</p:column>
+	
+							<f:facet name="footer">
+								<p:commandButton id="downloadRaw" 
+									ajax="false"
+									value="Download Files"
+									action="#{downloadBacking.downloadRawFiles}"/>
 							</f:facet>
 	
 						</p:dataTable>
