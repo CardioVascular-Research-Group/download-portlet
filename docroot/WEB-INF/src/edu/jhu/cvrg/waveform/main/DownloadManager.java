@@ -50,7 +50,6 @@ import com.liferay.portal.util.PortalUtil;
 import edu.jhu.cvrg.waveform.model.AnalysisFileVO;
 import edu.jhu.cvrg.waveform.model.DownloadFileVO;
 import edu.jhu.cvrg.waveform.model.UploadFileVO;
-import edu.jhu.cvrg.waveform.utility.AnalysisUtility;
 import edu.jhu.cvrg.waveform.utility.ResourceUtility;
 
 public class DownloadManager implements Serializable{
@@ -119,7 +118,7 @@ public class DownloadManager implements Serializable{
 				}
 			
 				downloadSelectedFile(zipFileName, "zip");
-				deleteFile(userFolderPath, AnalysisUtility.extractName(zipFileName));
+				deleteFile(userFolderPath, this.extractName(zipFileName));
 			}else{
 				String fileName = selectedRawFiles[0].getLiferayFile().getTitle();
 				if(selectedRawFiles[0] instanceof AnalysisFileVO){
@@ -306,6 +305,14 @@ public class DownloadManager implements Serializable{
 		File file = new File(localDownloadFolder + fileName);
 		if (file.delete())
 			;//System.out.println("Deleting " + fileName);
+	}
+	
+	private String extractName(String sFilePathName){
+		String sFileName="";
+		int iIndexLastSlash = sFilePathName.lastIndexOf("/");
+		sFileName = sFilePathName.substring(iIndexLastSlash+1);
+
+		return sFileName;
 	}
 
 }

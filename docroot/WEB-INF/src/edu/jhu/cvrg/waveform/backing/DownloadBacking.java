@@ -14,11 +14,12 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.model.User;
 import com.liferay.portlet.documentlibrary.service.DLAppLocalServiceUtil;
 
-import edu.jhu.cvrg.dbapi.dto.AnalysisJobDTO;
-import edu.jhu.cvrg.dbapi.dto.DocumentRecordDTO;
-import edu.jhu.cvrg.dbapi.dto.FileInfoDTO;
-import edu.jhu.cvrg.dbapi.factory.Connection;
-import edu.jhu.cvrg.dbapi.factory.ConnectionFactory;
+import edu.jhu.cvrg.data.dto.AnalysisJobDTO;
+import edu.jhu.cvrg.data.dto.DocumentRecordDTO;
+import edu.jhu.cvrg.data.dto.FileInfoDTO;
+import edu.jhu.cvrg.data.factory.Connection;
+import edu.jhu.cvrg.data.factory.ConnectionFactory;
+import edu.jhu.cvrg.data.util.DataStorageException;
 import edu.jhu.cvrg.waveform.main.DownloadManager;
 import edu.jhu.cvrg.waveform.model.AnalysisFileVO;
 import edu.jhu.cvrg.waveform.model.UploadFileVO;
@@ -44,48 +45,52 @@ public class DownloadBacking extends BackingBean implements Serializable {
 		
 		try{
 			userModel = ResourceUtility.getCurrentUser();
-		} catch (NullPointerException e) {
-			this.getLog().info("User not logged in.");
-		}
 		
-		if(userModel != null){
-			Connection theDB = ConnectionFactory.createConnection();
-			
-			List<FileInfoDTO> dbFileList = theDB.getFileListByUser(userModel.getUserId());
-			
-			DocumentRecordDTO documentRecord = null;
-			analysisResultList = new ArrayList<AnalysisFileVO>();
-			rawFileList = new ArrayList<UploadFileVO>();
-			
-			for (FileInfoDTO fileInfoDTO : dbFileList) {
+			if(userModel != null){
+				Connection theDB = ConnectionFactory.createConnection();
 				
-				try {
+				List<FileInfoDTO> dbFileList = theDB.getFileListByUser(userModel.getUserId());
+				
+				DocumentRecordDTO documentRecord = null;
+				analysisResultList = new ArrayList<AnalysisFileVO>();
+				rawFileList = new ArrayList<UploadFileVO>();
+				
+				for (FileInfoDTO fileInfoDTO : dbFileList) {
 					
-					FileEntry liferayFile = DLAppLocalServiceUtil.getFileEntry(fileInfoDTO.getFileEntryId());
-					
-					if(documentRecord == null || !documentRecord.getDocumentRecordId().equals(fileInfoDTO.getDocumentRecordId())){
-						documentRecord = theDB.getDocumentRecordById(fileInfoDTO.getDocumentRecordId());
+					try {
+						
+						FileEntry liferayFile = DLAppLocalServiceUtil.getFileEntry(fileInfoDTO.getFileEntryId());
+						
+						if(documentRecord == null || !documentRecord.getDocumentRecordId().equals(fileInfoDTO.getDocumentRecordId())){
+							documentRecord = theDB.getDocumentRecordById(fileInfoDTO.getDocumentRecordId());
+						}
+						
+						if(fileInfoDTO.getAnalysisJobId() != null){
+							AnalysisJobDTO analysisJob = theDB.getAnalysisJobById(fileInfoDTO.getAnalysisJobId());
+							analysisResultList.add(new AnalysisFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), 
+												   					  analysisJob.getDateOfAnalysis(), liferayFile.getTitle(), analysisJob.getServiceMethod(), 
+												   					  liferayFile, analysisJob.getAnalysisJobId()));
+						}else{
+							rawFileList.add(new UploadFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), documentRecord.getOriginalFormat(), documentRecord.getDateOfRecording(), liferayFile.getTitle(), liferayFile));
+						}
+						
+					} catch (PortalException e) {
+						e.printStackTrace();
+					} catch (SystemException e) {
+						e.printStackTrace();
+					} catch (DataStorageException e) {
+						e.printStackTrace();
 					}
 					
-					if(fileInfoDTO.getAnalysisJobId() != null){
-						AnalysisJobDTO analysisJob = theDB.getAnalysisJobById(fileInfoDTO.getAnalysisJobId());
-						analysisResultList.add(new AnalysisFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), 
-											   					  analysisJob.getDateOfAnalysis(), liferayFile.getTitle(), analysisJob.getServiceMethod(), 
-											   					  liferayFile, analysisJob.getAnalysisJobId()));
-					}else{
-						rawFileList.add(new UploadFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), documentRecord.getOriginalFormat(), documentRecord.getDateOfRecording(), liferayFile.getTitle(), liferayFile));
-					}
 					
-				} catch (PortalException e) {
-					e.printStackTrace();
-				} catch (SystemException e) {
-					e.printStackTrace();
 				}
 				
-				
-			}
-			
-			downloadManager = new DownloadManager();
+				downloadManager = new DownloadManager();
+			}	
+		} catch (NullPointerException e) {
+			this.getLog().info("User not logged in.");
+		} catch (DataStorageException e1) {
+			this.getLog().info("Cannot connect to data the storage system.");
 		}
 	}
 	
