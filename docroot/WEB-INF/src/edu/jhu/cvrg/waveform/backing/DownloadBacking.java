@@ -8,6 +8,10 @@ import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 
+import org.primefaces.event.NodeSelectEvent;
+import org.primefaces.model.TreeNode;
+
+import com.liferay.portal.NoSuchRepositoryEntryException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -22,6 +26,8 @@ import edu.jhu.cvrg.data.factory.ConnectionFactory;
 import edu.jhu.cvrg.data.util.DataStorageException;
 import edu.jhu.cvrg.waveform.main.DownloadManager;
 import edu.jhu.cvrg.waveform.model.AnalysisFileVO;
+import edu.jhu.cvrg.waveform.model.FileTreeNode;
+import edu.jhu.cvrg.waveform.model.LocalFileTree;
 import edu.jhu.cvrg.waveform.model.UploadFileVO;
 import edu.jhu.cvrg.waveform.utility.ResourceUtility;
 
@@ -32,6 +38,7 @@ public class DownloadBacking extends BackingBean implements Serializable {
 	private static final long serialVersionUID = 4778576272893200307L;
 	
 
+	private LocalFileTree fileTree;
 	private ArrayList<AnalysisFileVO> analysisResultList;
 	private AnalysisFileVO[] selectedResultFiles;
 	private ArrayList<UploadFileVO> rawFileList;
@@ -47,43 +54,14 @@ public class DownloadBacking extends BackingBean implements Serializable {
 			userModel = ResourceUtility.getCurrentUser();
 		
 			if(userModel != null){
-				Connection theDB = ConnectionFactory.createConnection();
+				if(fileTree == null && userModel != null){
+					fileTree = new LocalFileTree(userModel.getUserId(), "hea");
+				}
 				
-				List<FileInfoDTO> dbFileList = theDB.getFileListByUser(userModel.getUserId());
-				
-				DocumentRecordDTO documentRecord = null;
 				analysisResultList = new ArrayList<AnalysisFileVO>();
 				rawFileList = new ArrayList<UploadFileVO>();
 				
-				for (FileInfoDTO fileInfoDTO : dbFileList) {
-					
-					try {
-						
-						FileEntry liferayFile = DLAppLocalServiceUtil.getFileEntry(fileInfoDTO.getFileEntryId());
-						
-						if(documentRecord == null || !documentRecord.getDocumentRecordId().equals(fileInfoDTO.getDocumentRecordId())){
-							documentRecord = theDB.getDocumentRecordById(fileInfoDTO.getDocumentRecordId());
-						}
-						
-						if(fileInfoDTO.getAnalysisJobId() != null){
-							AnalysisJobDTO analysisJob = theDB.getAnalysisJobById(fileInfoDTO.getAnalysisJobId());
-							analysisResultList.add(new AnalysisFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), 
-												   					  analysisJob.getDateOfAnalysis(), liferayFile.getTitle(), analysisJob.getServiceMethod(), 
-												   					  liferayFile, analysisJob.getAnalysisJobId()));
-						}else{
-							rawFileList.add(new UploadFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), documentRecord.getOriginalFormat(), documentRecord.getDateOfRecording(), liferayFile.getTitle(), liferayFile));
-						}
-						
-					} catch (PortalException e) {
-						e.printStackTrace();
-					} catch (SystemException e) {
-						e.printStackTrace();
-					} catch (DataStorageException e) {
-						e.printStackTrace();
-					}
-					
-					
-				}
+				loadAllNodes();
 				
 				downloadManager = new DownloadManager();
 			}	
@@ -92,6 +70,48 @@ public class DownloadBacking extends BackingBean implements Serializable {
 		} catch (DataStorageException e1) {
 			this.getLog().info("Cannot connect to data the storage system.");
 		}
+	}
+
+	private void loadAllNodes() throws DataStorageException {
+		Connection theDB = ConnectionFactory.createConnection();
+		List<FileInfoDTO> dbFileList = theDB.getAllFilesByUser(userModel.getUserId());
+		DocumentRecordDTO documentRecord = null;
+		
+		for (FileInfoDTO fileInfoDTO : dbFileList) {
+			documentRecord = loadFilesByRecord(theDB, documentRecord,fileInfoDTO);
+		}
+	}
+
+	private DocumentRecordDTO loadFilesByRecord( Connection theDB, DocumentRecordDTO documentRecord, FileInfoDTO fileInfoDTO) {
+		try {
+			
+			FileEntry liferayFile = DLAppLocalServiceUtil.getFileEntry(fileInfoDTO.getFileEntryId());
+			
+			
+			
+			if(documentRecord == null || !documentRecord.getDocumentRecordId().equals(fileInfoDTO.getDocumentRecordId())){
+				documentRecord = theDB.getDocumentRecordById(fileInfoDTO.getDocumentRecordId());
+			}
+			
+			if(fileInfoDTO.getAnalysisJobId() != null){
+				AnalysisJobDTO analysisJob = theDB.getAnalysisJobById(fileInfoDTO.getAnalysisJobId());
+				analysisResultList.add(new AnalysisFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), 
+									   					  analysisJob.getDateOfAnalysis(), liferayFile.getTitle(), analysisJob.getServiceMethod(), 
+									   					  liferayFile, analysisJob.getAnalysisJobId()));
+			}else{
+				rawFileList.add(new UploadFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), documentRecord.getOriginalFormat(), documentRecord.getDateOfRecording(), liferayFile.getTitle(), liferayFile));
+			}
+			
+		} catch (NoSuchRepositoryEntryException e){
+			this.getLog().warn("Waveform file not found. [" + e.getMessage() + "]");
+		} catch (PortalException e) {
+			e.printStackTrace();
+		} catch (SystemException e) {
+			e.printStackTrace();
+		} catch (DataStorageException e) {
+			e.printStackTrace();
+		}
+		return documentRecord;
 	}
 	
 	public String downloadRawFiles(){
@@ -153,4 +173,45 @@ public class DownloadBacking extends BackingBean implements Serializable {
 		return userModel;
 	}
 
+	public LocalFileTree getFileTree() {
+		return fileTree;
+	}
+
+	public void setFileTree(LocalFileTree fileTree) {
+		this.fileTree = fileTree;
+	}
+	
+	public void onNodeSelect(NodeSelectEvent event) { 
+    	getLog().info("Node selected... ID is " + fileTree.getSelectedNodeId());
+    	
+    	analysisResultList = new ArrayList<AnalysisFileVO>();
+		rawFileList = new ArrayList<UploadFileVO>();
+		try {
+			Connection theDB = ConnectionFactory.createConnection();
+	    	if(fileTree.getSelectedNode() != null ){
+    			if(fileTree.getSelectedNode().isLeaf()){
+    				loadNode(theDB, fileTree.getSelectedNode());
+    			}else{
+    				for (TreeNode node : fileTree.getSelectedNode().getChildren()) {
+						loadNode(theDB, node);
+					}
+    			}
+	    	}else{
+		    	loadAllNodes();
+		    }
+    	} catch (DataStorageException e) {
+			e.printStackTrace();
+		}
+    	
+    }
+
+	private void loadNode(Connection theDB, TreeNode node) throws DataStorageException {
+		
+		DocumentRecordDTO documentRecord = theDB.getDocumentRecordById(((FileTreeNode)node).getDocumentRecordId());
+		List<FileInfoDTO> dbFileList = theDB.getAllFilesByDocumentRecordId(documentRecord.getDocumentRecordId());
+		
+		for (FileInfoDTO fileInfoDTO : dbFileList) {
+			this.loadFilesByRecord(theDB, documentRecord, fileInfoDTO);
+		}
+	}
 }

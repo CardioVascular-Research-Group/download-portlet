@@ -1,3 +1,9 @@
+div.westpanel div.ui-widget-content .waveformTree{
+	width: 99%;
+	height: 300px;
+	overflow: auto;
+}
+
 .layout-unit-download {
 	min-width:400px; 
 	min-height:525px; 
@@ -14,6 +20,22 @@
 
 .download-table {
 	width:100%;
+}
+
+div.listofrecords{
+	width:100%;
+	min-height:260px;
+	margin: 10px 0px 0px 0px;
+}
+
+div.listofanalysis{
+	width:100%;
+	min-height:260px;
+	margin: 0px 0px 10px 0px;
+}
+
+div.listofanalysis div.ui-datatable-header, div.listofrecords div.ui-datatable-header{
+	text-align: left;
 }
 
 ul#css3menu1 li.topmenuBrowse > a, ul#css3menu1 li.topmenuBrowse
