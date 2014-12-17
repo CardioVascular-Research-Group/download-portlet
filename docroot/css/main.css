@@ -22,19 +22,7 @@ div.westpanel div.ui-widget-content .waveformTree{
 	width:100%;
 }
 
-div.listofrecords{
-	width:100%;
-	min-height:260px;
-	margin: 10px 0px 0px 0px;
-}
-
-div.listofanalysis{
-	width:100%;
-	min-height:260px;
-	margin: 0px 0px 10px 0px;
-}
-
-div.listofanalysis div.ui-datatable-header, div.listofrecords div.ui-datatable-header{
+ div.ui-datatable-header, div.listofrecords div.ui-datatable-header{
 	text-align: left;
 }
 
