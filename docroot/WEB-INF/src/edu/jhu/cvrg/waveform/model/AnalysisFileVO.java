@@ -2,7 +2,7 @@ package edu.jhu.cvrg.waveform.model;
 
 import java.util.Date;
 
-import com.liferay.portal.kernel.repository.model.FileEntry;
+import edu.jhu.cvrg.filestore.model.FSFile;
 
 public class AnalysisFileVO extends DownloadFileVO{
 
@@ -13,8 +13,8 @@ public class AnalysisFileVO extends DownloadFileVO{
 	private Long analysisJobId;
 	
 	public AnalysisFileVO(String subjectId, Date dateOfAnalysis,
-			String recordName, String algorithmUsed, FileEntry liferayFile, Long analysisJobId) {
-		super(subjectId, recordName, liferayFile);
+			String recordName, String algorithmUsed, FSFile file, Long analysisJobId) {
+		super(subjectId, recordName, file);
 		this.dateOfAnalysis = dateOfAnalysis;
 		this.algorithmUsed = algorithmUsed;
 		this.analysisJobId = analysisJobId;
@@ -29,7 +29,7 @@ public class AnalysisFileVO extends DownloadFileVO{
 	}
 	
 	public String getUserRecordName(){
-		String replacement = '.'+this.getLiferayFile().getExtension();
+		String replacement = '.'+this.getFile().getExtension();
 		String target = ("_"+analysisJobId+replacement);
 				
 		return this.getRecordName().replace(target, replacement);

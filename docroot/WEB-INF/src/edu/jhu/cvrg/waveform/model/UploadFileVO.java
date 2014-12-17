@@ -2,9 +2,8 @@ package edu.jhu.cvrg.waveform.model;
 
 import java.util.Date;
 
-import com.liferay.portal.kernel.repository.model.FileEntry;
-
 import edu.jhu.cvrg.data.enums.FileType;
+import edu.jhu.cvrg.filestore.model.FSFile;
 
 public class UploadFileVO extends DownloadFileVO{
 
@@ -14,8 +13,8 @@ public class UploadFileVO extends DownloadFileVO{
 	private Date dateOfRecording;
 	
 	public UploadFileVO(String subjectId, FileType datatype,
-			Date dateOfRecording, String recordName, FileEntry liferayFile) {
-		super(subjectId, recordName, liferayFile);
+			Date dateOfRecording, String recordName, FSFile file) {
+		super(subjectId, recordName, file);
 		this.datatype = datatype;
 		this.dateOfRecording = dateOfRecording;
 		

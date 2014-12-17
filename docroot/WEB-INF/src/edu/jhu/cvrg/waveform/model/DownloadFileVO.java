@@ -2,7 +2,7 @@ package edu.jhu.cvrg.waveform.model;
 
 import java.io.Serializable;
 
-import com.liferay.portal.kernel.repository.model.FileEntry;
+import edu.jhu.cvrg.filestore.model.FSFile;
 
 public class DownloadFileVO implements Serializable{
 
@@ -10,14 +10,14 @@ public class DownloadFileVO implements Serializable{
 	
 	private String subjectId;
 	private String recordName;
-	private FileEntry liferayFile;
+	private FSFile file;
 	
 	public DownloadFileVO(String subjectId, String recordName,
-			FileEntry liferayFile) {
+			FSFile file) {
 		super();
 		this.subjectId = subjectId;
 		this.recordName = recordName;
-		this.liferayFile = liferayFile;
+		this.file = file;
 	}
 	
 	public String getSubjectId() {
@@ -26,8 +26,8 @@ public class DownloadFileVO implements Serializable{
 	public String getRecordName() {
 		return recordName;
 	}
-	public FileEntry getLiferayFile() {
-		return liferayFile;
+	public FSFile getFile() {
+		return file;
 	}
 	
 }

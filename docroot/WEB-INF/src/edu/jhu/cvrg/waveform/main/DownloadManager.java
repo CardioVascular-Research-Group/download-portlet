@@ -41,12 +41,10 @@ import javax.faces.context.FacesContext;
 import javax.portlet.PortletResponse;
 import javax.servlet.http.HttpServletResponse;
 
-import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.model.User;
 import com.liferay.portal.util.PortalUtil;
 
+import edu.jhu.cvrg.filestore.model.FSFile;
 import edu.jhu.cvrg.waveform.model.AnalysisFileVO;
 import edu.jhu.cvrg.waveform.model.DownloadFileVO;
 import edu.jhu.cvrg.waveform.model.UploadFileVO;
@@ -120,23 +118,19 @@ public class DownloadManager implements Serializable{
 				downloadSelectedFile(zipFileName, "zip");
 				deleteFile(userFolderPath, this.extractName(zipFileName));
 			}else{
-				String fileName = selectedRawFiles[0].getLiferayFile().getTitle();
+				String fileName = selectedRawFiles[0].getFile().getName();
 				if(selectedRawFiles[0] instanceof AnalysisFileVO){
 					AnalysisFileVO aFile = (AnalysisFileVO)selectedRawFiles[0];
 					fileName = aFile.getUserRecordName();
 				}
 				
-				FileEntry file = selectedRawFiles[0].getLiferayFile();
+				FSFile file = selectedRawFiles[0].getFile();
 				
-				downloadSelectedFile(file.getContentStream(), fileName, file.getSize(), file.getExtension());
+				downloadSelectedFile(file.getFileDataAsInputStream(), fileName, file.getFileSize(), file.getExtension());
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (PortalException e) {
-			e.printStackTrace();
-		} catch (SystemException e) {
-			e.printStackTrace();
-		}
+		} 
 	}
 	
 	
@@ -175,13 +169,13 @@ public class DownloadManager implements Serializable{
 		
 		InputStream inStream = null;
 		try {
-			inStream = file.getLiferayFile().getContentStream();
+			inStream = file.getFile().getFileDataAsInputStream();
 			String entryName = null;
 			if(file instanceof AnalysisFileVO){
 				AnalysisFileVO aFile = (AnalysisFileVO) file;
 				entryName = aFile.getAnalysisJobId()+"/"+aFile.getUserRecordName();
 			}else{
-				entryName = file.getLiferayFile().getTitle();
+				entryName = file.getFile().getName();
 			}
 			
 			ZipEntry zipEntry = new ZipEntry(entryName);
@@ -196,10 +190,6 @@ public class DownloadManager implements Serializable{
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (ZipException e){
-			e.printStackTrace();
-		} catch (PortalException e) {
-			e.printStackTrace();
-		} catch (SystemException e) {
 			e.printStackTrace();
 		}finally{
 			zipOut.closeEntry();
