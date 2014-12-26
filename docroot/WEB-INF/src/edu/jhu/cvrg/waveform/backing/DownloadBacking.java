@@ -118,11 +118,42 @@ public class DownloadBacking extends BackingBean implements Serializable {
 		return "success";
 	}
 	
+	public String downloadAllRawFiles(){
+
+		if(rawFileList != null && !rawFileList.isEmpty()){
+			downloadManager.downloadRawFiles(rawFileList.toArray(new UploadFileVO[rawFileList.size()]));
+		}
+		return "success";
+	}
+	
 	public String downloadAnalysisResultFiles(){
 		if(selectedResultFiles.length != 0){
 			downloadManager.downloadAnalysisResults(selectedResultFiles);
 		}
 		return "success";
+	}
+	
+	public String downloadAllAnalysisResultFiles(){
+		if(analysisResultList != null && !analysisResultList.isEmpty()){
+			downloadManager.downloadAnalysisResults(analysisResultList.toArray(new AnalysisFileVO[analysisResultList.size()]));
+		}
+		return "success";
+	}
+	
+	public int getAnalysisFileListCount(){
+		if(analysisResultList != null){
+			return analysisResultList.size();
+		}else{
+			return 0;
+		}
+	}
+	
+	public int getRawFileListCount(){
+		if(rawFileList != null){
+			return rawFileList.size();
+		}else{
+			return 0;
+		}
 	}
 
 	public AnalysisFileVO[] getSelectedResultFiles() {

@@ -89,8 +89,14 @@
 								<f:facet name="footer">
 									<p:commandButton id="downloadRaw" 
 										ajax="false"
-										value="Download Files"
+										value="Download Selected Files"
+										rendered="#{downloadBacking.analysisFileListCount  > 0}"
 										action="#{downloadBacking.downloadRawFiles}"/>
+									<p:commandButton id="downloadAllRaw" 
+										ajax="false"
+										value="Download All Files (#{downloadBacking.rawFileListCount})"
+										rendered="#{downloadBacking.rawFileListCount > 0}"
+										action="#{downloadBacking.downloadAllRawFiles}"/>
 								</f:facet>
 							</p:dataTable>
 						</div>
@@ -129,8 +135,14 @@
 								<f:facet name="footer">
 									<p:commandButton id="downloadResults" 
 										ajax="false"
-										value="Download Files"
+										value="Download Selected Files"
+										rendered="#{downloadBacking.analysisFileListCount  > 0}"
 										action="#{downloadBacking.downloadAnalysisResultFiles}"/>
+									<p:commandButton id="downloadAllResults" 
+										ajax="false"
+										value="Download All Files (#{downloadBacking.analysisFileListCount})"
+										rendered="#{downloadBacking.analysisFileListCount  > 0}"
+										action="#{downloadBacking.downloadAllAnalysisResultFiles}"/>
 								</f:facet>
 							</p:dataTable>
 						</div>
