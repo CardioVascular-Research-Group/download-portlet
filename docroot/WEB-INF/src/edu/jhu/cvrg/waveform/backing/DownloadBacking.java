@@ -93,13 +93,15 @@ public class DownloadBacking extends BackingBean implements Serializable {
 				documentRecord = theDB.getDocumentRecordById(fileInfoDTO.getDocumentRecordId());
 			}
 			
-			if(fileInfoDTO.getAnalysisJobId() != null){
-				AnalysisJobDTO analysisJob = theDB.getAnalysisJobById(fileInfoDTO.getAnalysisJobId());
-				analysisResultList.add(new AnalysisFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), 
-									   					  analysisJob.getDateOfAnalysis(), file.getName(), analysisJob.getServiceMethod(), 
-									   					file, analysisJob.getAnalysisJobId()));
-			}else{
-				rawFileList.add(new UploadFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), documentRecord.getOriginalFormat(), documentRecord.getDateOfRecording(), file.getName(), file));
+			if(file!=null){
+				if(fileInfoDTO.getAnalysisJobId() != null){
+					AnalysisJobDTO analysisJob = theDB.getAnalysisJobById(fileInfoDTO.getAnalysisJobId());
+					analysisResultList.add(new AnalysisFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), 
+										   					  analysisJob.getDateOfAnalysis(), file.getName(), analysisJob.getServiceMethod(), 
+										   					file, analysisJob.getAnalysisJobId()));
+				}else{
+					rawFileList.add(new UploadFileVO(fileInfoDTO.getDocumentRecordId() + " - " +documentRecord.getSubjectId(), documentRecord.getOriginalFormat(), documentRecord.getDateOfRecording(), file.getName(), file));
+				}
 			}
 			
 		} catch (FSException e){
